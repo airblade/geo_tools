@@ -1,0 +1,18 @@
+GeoTools
+========
+
+A few little methods to ease working with latitudes and longitudes.
+
+
+Example
+=======
+
+class PassageReport < ActiveRecord::Base
+  validates_latitude_of  :from_latitude,  :to_latitude
+  validates_longitude_of :from_longitude, :to_longitude
+end
+
+
+Feedback welcome to boss@airbladesoftware.com.
+
+Copyright (c) 2008 Andy Stewart, AirBlade Software Ltd.  Released under the MIT license

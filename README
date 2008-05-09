@@ -1,18 +1,85 @@
 GeoTools
 ========
 
-A few little methods to ease working with latitudes and longitudes.
+You have lots of plugin choices if you want to geocode North American addresses, or find all the locations near somewhere.  But few help you with forms and validation.
+
+This plugin does three things:
+
+* Adds +latitude_field+ and +longitude_field+ form helpers to Rails' default form builder.
+* Lets your model acts_as_location, to work seamlessly with the form helpers.
+* Validates the location data entered on the form and in the database.
+
+
+Assumptions
+===========
+
+* Any model that acts_as_location has latitude and longitude floats defined like this:
+
+  # In your model's migration's self.up method:
+  create_table :thingies do |t|
+    # Your model's various fields.
+    t.string :name
+    t.timestamps
+    ...
+
+    # Stuff GeoTools needs:
+    t.with_options :precision => 15, :scale => 10 do |c|
+      c.decimal :latitude
+      c.decimal :longitude
+    end
+  end
+
+* A latitude should be entered on a form like this:
+
+  xx <degree symbol> yy <decimal point> zzz h
+
+where:
+
+  xx is degrees (0 <= integer <= 90; maximum length of 2 digits)
+  yy is minutes (0 <= integer <= 59; maximum length of 2 digits)
+  zzz is milli-minutes (0 <= integer <= 999; maximum length of 3 digits)
+  h is hemisphere ('N' or 'S')
+
+* Similarly, a longitude should be entered on a form like this:
+
+  xxx <degree symbol> yy <decimal point> zzz h
+
+where:
+
+  xxx is degrees (0 <= integer <= 180; maximum length of 3 digits)
+  yy is minutes (0 <= integer <= 59; maximum length of 2 digits)
+  zzz is milli-minutes (0 <= integer <= 999; maximum length of 3 digits)
+  h is hemisphere ('E' or 'W')
 
 
 Example
 =======
 
-class PassageReport < ActiveRecord::Base
-  validates_latitude_of  :from_latitude,  :to_latitude
-  validates_longitude_of :from_longitude, :to_longitude
+# Model
+class Treasure < ActiveRecord::Base
+  acts_as_location
 end
 
+# View
+<% form_for @treasure do |f| %>
+  <%= f.text_field :spot_marked_with %>
+  <%= f.latitude_field :latitude %>
+  <%= f.longitude_field :longitude %>
+<% end %>
 
-Feedback welcome to boss@airbladesoftware.com.
+# Controller
+# <same as usual>
+
+
+To Do
+=====
+Lots of DRY'ing.
+Investigate implementing with ActiveRecord's multiparameter assignment.
+
+
+Feedback
+========
+Yes please!  --> boss@airbladesoftware.com
+
 
 Copyright (c) 2008 Andy Stewart, AirBlade Software Ltd.  Released under the MIT license

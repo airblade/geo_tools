@@ -1,5 +1,4 @@
-# TODO: DRY
-# TODO: Use ActiveRecord's multiparameter assignment instead.
+# NOTE: Perhaps use ActiveRecord's multiparameter assignment instead.
 #       Cf ActiveRecord::Base#assign_multiparameter_attributes(pairs),
 #          ActiveRecord::Base#execute_callstack_for_multiparameter_attributes(pairs), etc.
 module AirBlade
@@ -94,29 +93,37 @@ module AirBlade
 
         private
 
+        # Constructs a floating-point latitude from the constituent parts.
+        # If they are all blank, we don't bother.
         def construct_latitude
-          lat_deg       = to_bounded_float @latitude_degrees,         90, :@latitude_degrees_invalid
-          lat_min       = to_bounded_float @latitude_minutes,         59, :@latitude_minutes_invalid
-          lat_milli_min = to_bounded_float @latitude_milli_minutes,  999, :@latitude_milli_minutes_invalid
-          lat_hem       = to_hemisphere    @latitude_hemisphere, %w(N S), :@latitude_hemisphere_invalid
+          unless [@latitude_degrees, @latitude_minutes, @latitude_milli_minutes, @latitude_hemisphere].all? { |attr| attr.blank? }
+            lat_deg       = to_bounded_float @latitude_degrees,         90, :@latitude_degrees_invalid
+            lat_min       = to_bounded_float @latitude_minutes,         59, :@latitude_minutes_invalid
+            lat_milli_min = to_bounded_float @latitude_milli_minutes,  999, :@latitude_milli_minutes_invalid
+            lat_hem       = to_hemisphere    @latitude_hemisphere, %w(N S), :@latitude_hemisphere_invalid
 
-          unless @latitude_degrees_invalid       || @latitude_minutes_invalid    ||
-                 @latitude_milli_minutes_invalid || @latitude_hemisphere_invalid
-            self.latitude = lat_deg + ( (lat_min + (lat_milli_min / 1000)) / 60 )
-            self.latitude = self.latitude * -1 if lat_hem == 'S'
+            unless @latitude_degrees_invalid       || @latitude_minutes_invalid    ||
+                   @latitude_milli_minutes_invalid || @latitude_hemisphere_invalid
+              self.latitude = lat_deg + ( (lat_min + (lat_milli_min / 1000)) / 60 )
+              self.latitude = self.latitude * -1 if lat_hem == 'S'
+            end
           end
         end
 
+        # Constructs a floating-point longitude from the constituent parts.
+        # If they are all blank, we don't bother.
         def construct_longitude
-          long_deg       = to_bounded_float @longitude_degrees,        180, :@longitude_degrees_invalid
-          long_min       = to_bounded_float @longitude_minutes,         59, :@longitude_minutes_invalid
-          long_milli_min = to_bounded_float @longitude_milli_minutes,  999, :@longitude_milli_minutes_invalid
-          long_hem       = to_hemisphere    @longitude_hemisphere, %w(E W), :@longitude_hemisphere_invalid
+          unless [@longtude_degrees, @longtude_minutes, @longtude_milli_minutes, @longtude_hemisphere].all? { |attr| attr.blank? }
+            long_deg       = to_bounded_float @longitude_degrees,        180, :@longitude_degrees_invalid
+            long_min       = to_bounded_float @longitude_minutes,         59, :@longitude_minutes_invalid
+            long_milli_min = to_bounded_float @longitude_milli_minutes,  999, :@longitude_milli_minutes_invalid
+            long_hem       = to_hemisphere    @longitude_hemisphere, %w(E W), :@longitude_hemisphere_invalid
 
-          unless @longitude_degrees_invalid       || @longitude_minutes_invalid    ||
-                 @longitude_milli_minutes_invalid || @longitude_hemisphere_invalid
-            self.longitude = long_deg + ( (long_min + (long_milli_min / 1000)) / 60 )
-            self.longitude = self.longitude * -1 if long_hem == 'W'
+            unless @longitude_degrees_invalid       || @longitude_minutes_invalid    ||
+                   @longitude_milli_minutes_invalid || @longitude_hemisphere_invalid
+              self.longitude = long_deg + ( (long_min + (long_milli_min / 1000)) / 60 )
+              self.longitude = self.longitude * -1 if long_hem == 'W'
+            end
           end
         end
 

@@ -62,7 +62,7 @@ end
 
 # View
 <% form_for @treasure do |f| %>
-  <%= f.text_field :spot_marked_with %>
+  <%= f.text_field :spot_marked_by %>
   <%= f.latitude_field :latitude %>
   <%= f.longitude_field :longitude %>
 <% end %>

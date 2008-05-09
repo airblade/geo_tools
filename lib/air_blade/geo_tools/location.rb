@@ -49,8 +49,10 @@ module AirBlade
         end
 
         def to_s
-          lat = "#{latitude_degrees}\xc2\xb0#{latitude_minutes}.#{latitude_milli_minutes.to_s.rjust 3, '0'}\xe2\x80\xb2"
-          long = "#{longitude_degrees}\xc2\xb0#{longitude_minutes}.#{longitude_milli_minutes.to_s.rjust 3, '0'}\xe2\x80\xb2"
+          # Unicode degree symbol: C2B0
+          # Unicode minute symbol: E280B2
+          lat = "#{latitude_degrees}\xc2\xb0#{latitude_minutes}.#{latitude_milli_minutes.to_s.rjust 3, '0'}\xe2\x80\xb2#{latitude_hemisphere}"
+          long = "#{longitude_degrees}\xc2\xb0#{longitude_minutes}.#{longitude_milli_minutes.to_s.rjust 3, '0'}\xe2\x80\xb2#{longitude_hemisphere}"
           "#{lat}, #{long}"
         end
 

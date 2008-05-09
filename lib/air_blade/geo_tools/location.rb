@@ -48,6 +48,12 @@ module AirBlade
           errors.add :longitude, "hemisphere is invalid"       if @longitude_hemisphere_invalid
         end
 
+        def to_s
+          lat = "#{latitude_degrees}\xc2\xb0#{latitude_minutes}.#{latitude_milli_minutes.to_s.rjust 3, '0'}\xe2\x80\xb2"
+          long = "#{longitude_degrees}\xc2\xb0#{longitude_minutes}.#{longitude_milli_minutes.to_s.rjust 3, '0'}\xe2\x80\xb2"
+          "#{lat}, #{long}"
+        end
+
         attr_writer :latitude_degrees,  :latitude_minutes,  :latitude_milli_minutes,  :latitude_hemisphere
         attr_writer :longitude_degrees, :longitude_minutes, :longitude_milli_minutes, :longitude_hemisphere
 

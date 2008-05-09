@@ -113,7 +113,7 @@ module AirBlade
         # Constructs a floating-point longitude from the constituent parts.
         # If they are all blank, we don't bother.
         def construct_longitude
-          unless [@longtude_degrees, @longtude_minutes, @longtude_milli_minutes, @longtude_hemisphere].all? { |attr| attr.blank? }
+          unless [@longitude_degrees, @longitude_minutes, @longitude_milli_minutes, @longitude_hemisphere].all? { |attr| attr.blank? }
             long_deg       = to_bounded_float @longitude_degrees,        180, :@longitude_degrees_invalid
             long_min       = to_bounded_float @longitude_minutes,         59, :@longitude_minutes_invalid
             long_milli_min = to_bounded_float @longitude_milli_minutes,  999, :@longitude_milli_minutes_invalid

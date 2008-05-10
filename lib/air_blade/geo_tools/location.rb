@@ -58,37 +58,39 @@ module AirBlade
         attr_writer :latitude_degrees,  :latitude_minutes,  :latitude_milli_minutes,  :latitude_hemisphere
         attr_writer :longitude_degrees, :longitude_minutes, :longitude_milli_minutes, :longitude_hemisphere
 
+        # TODO: clean up all the checks for nil:
+
         def latitude_degrees
-          @latitude_degrees || latitude.abs.to_i
+          @latitude_degrees || (latitude.nil? ? nil : latitude.abs.to_i)
         end
 
         def latitude_minutes
-          @latitude_minutes || lat_minutes_as_float.to_i
+          @latitude_minutes || (latitude.nil? ? nil : lat_minutes_as_float.to_i)
         end
 
         def latitude_milli_minutes
-          @latitude_milli_minutes || ((lat_minutes_as_float - lat_minutes_as_float.to_i) * 1000).to_i
+          @latitude_milli_minutes || (latitude.nil? ? nil : ((lat_minutes_as_float - lat_minutes_as_float.to_i) * 1000).to_i)
         end
 
         def latitude_hemisphere
-          @latitude_hemisphere || ( (latitude > 0) ? 'N' : 'S' )
+          @latitude_hemisphere || (latitude.nil? ? nil : ((latitude > 0) ? 'N' : 'S' ))
         end
 
 
         def longitude_degrees
-          @longitude_degrees || longitude.abs.to_i
+          @longitude_degrees || (longitude.nil? ? nil : longitude.abs.to_i)
         end
 
         def longitude_minutes
-          @longitude_minutes || long_minutes_as_float.to_i
+          @longitude_minutes || (longitude.nil? ? nil : long_minutes_as_float.to_i)
         end
 
         def longitude_milli_minutes
-          @longitude_milli_minutes || ((long_minutes_as_float - long_minutes_as_float.to_i) * 1000).to_i
+          @longitude_milli_minutes || (longitude.nil? ? nil : ((long_minutes_as_float - long_minutes_as_float.to_i) * 1000).to_i)
         end
 
         def longitude_hemisphere
-          @longitude_hemisphere || ( (longitude > 0) ? 'E' : 'W' )
+          @longitude_hemisphere || (longitude.nil? ? nil : ( (longitude > 0) ? 'E' : 'W' ))
         end
 
         private

@@ -88,6 +88,7 @@ To Do
 =====
 Tests/specs :-)
 Lots of DRY'ing.
+Clean up all the checks for nil in Location's accessors.
 Investigate implementing with ActiveRecord's multiparameter assignment.
 
 

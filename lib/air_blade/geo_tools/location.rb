@@ -50,8 +50,11 @@ module AirBlade
         def to_s
           # Unicode degree symbol: C2B0
           # Unicode minute symbol: E280B2
-          lat = "#{latitude_degrees}\xc2\xb0#{latitude_minutes}.#{latitude_milli_minutes.to_s.rjust 3, '0'}\xe2\x80\xb2#{latitude_hemisphere}"
-          long = "#{longitude_degrees}\xc2\xb0#{longitude_minutes}.#{longitude_milli_minutes.to_s.rjust 3, '0'}\xe2\x80\xb2#{longitude_hemisphere}"
+          format = lambda do |degrees, minutes, milli_minutes, hemisphere|
+            "#{degrees}\xc2\xb0#{minutes}.#{milli_minutes}\xe2\x80\xb2#{hemisphere}"
+          end
+          lat = format[latitude_degrees, latitude_minutes, latitude_milli_minutes, latitude_hemisphere]
+          long = format[longitude_degrees, longitude_minutes, longitude_milli_minutes, longitude_hemisphere]
           "#{lat}, #{long}"
         end
 
@@ -64,15 +67,15 @@ module AirBlade
         # Else return nil.
 
         def latitude_degrees
-          field_value @latitude_degrees, latitude, lambda { latitude.abs.to_i }
+          field_value @latitude_degrees, latitude, lambda { latitude.abs.to_i }, 2, false
         end
 
         def latitude_minutes
-          field_value @latitude_minutes, latitude, lambda { lat_minutes_as_float.to_i }
+          field_value @latitude_minutes, latitude, lambda { lat_minutes_as_float.to_i }, 2
         end
 
         def latitude_milli_minutes
-          field_value @latitude_milli_minutes, latitude, lambda { ((lat_minutes_as_float - lat_minutes_as_float.to_i) * 1000).to_i }
+          field_value @latitude_milli_minutes, latitude, lambda { ((lat_minutes_as_float - lat_minutes_as_float.to_i) * 1000).to_i }, 3
         end
 
         def latitude_hemisphere
@@ -81,15 +84,15 @@ module AirBlade
 
 
         def longitude_degrees
-          field_value @longitude_degrees, longitude, lambda { longitude.abs.to_i }
+          field_value @longitude_degrees, longitude, lambda { longitude.abs.to_i }, 3, false
         end
 
         def longitude_minutes
-          field_value @longitude_minutes, longitude, lambda { long_minutes_as_float.to_i }
+          field_value @longitude_minutes, longitude, lambda { long_minutes_as_float.to_i }, 2
         end
 
         def longitude_milli_minutes
-          field_value @longitude_milli_minutes, longitude, lambda { ((long_minutes_as_float - long_minutes_as_float.to_i) * 1000).to_i }
+          field_value @longitude_milli_minutes, longitude, lambda { ((long_minutes_as_float - long_minutes_as_float.to_i) * 1000).to_i }, 3
         end
 
         def longitude_hemisphere
@@ -98,11 +101,23 @@ module AirBlade
 
         private
 
-        def field_value(ivar, latitude_or_longitude, current)
-          if ivar
-            ivar
+        # Returns a value for the field.
+        # - field holds the value given by the user, if any.
+        # - latitude_or_longitude is the current overall value for the latitude or longitude.
+        # - current is a lambda which shows the part of the overall latitude or longitude value appropriate for the field.
+        # - width is the number of characters for the field.  The field is left-padded with zeros.
+        # - pad_if_blank specifies whether or not to pad a blank field with zeros.  We need this option because we default
+        # minutes and milli-minutes to zero if they are blank, but not degrees.
+        def field_value(field, latitude_or_longitude, current, width = 1, pad_if_blank = true)
+          padded = lambda { |x| x.to_s.rjust width, '0' }
+          if field
+            if field.blank?
+              pad_if_blank ? padded[field] : field
+            else
+              padded[field]
+            end
           elsif latitude_or_longitude
-            current.call
+            padded[current.call]
           else
             nil
           end
@@ -143,11 +158,11 @@ module AirBlade
         end
 
         def lat_minutes_as_float
-          (latitude.abs - latitude_degrees) * 60
+          (latitude.abs - latitude_degrees.to_i) * 60
         end
 
         def long_minutes_as_float
-          (longitude.abs - longitude_degrees) * 60
+          (longitude.abs - longitude_degrees.to_i) * 60
         end
 
         def to_bounded_float(value, maximum, error_flag)

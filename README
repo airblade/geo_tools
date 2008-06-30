@@ -36,8 +36,8 @@ Assumptions
   where:
 
   xx is degrees (0 <= integer <= 90; maximum length of 2 digits)
-  yy is minutes (0 <= integer <= 59; maximum length of 2 digits)
-  zzz is milli-minutes (0 <= integer <= 999; maximum length of 3 digits)
+  yy is minutes (0 <= integer <= 59; maximum length of 2 digits; optional; defaults to 0)
+  zzz is milli-minutes (0 <= integer <= 999; maximum length of 3 digits; optional; defaults to 0)
   h is hemisphere ('N' or 'S')
 
 * Similarly, a longitude should be entered on a form like this:
@@ -47,8 +47,8 @@ Assumptions
   where:
 
   xxx is degrees (0 <= integer <= 180; maximum length of 3 digits)
-  yy is minutes (0 <= integer <= 59; maximum length of 2 digits)
-  zzz is milli-minutes (0 <= integer <= 999; maximum length of 3 digits)
+  yy is minutes (0 <= integer <= 59; maximum length of 2 digits; optional; defaults to 0)
+  zzz is milli-minutes (0 <= integer <= 999; maximum length of 3 digits; optional; defaults to 0)
   h is hemisphere ('E' or 'W')
 
 
@@ -75,7 +75,7 @@ You'll get validation on every field (degrees, minutes, milli-minutes, hemispher
 Here's an example script/console session:
 
 >> puts Treasure.find(:first).location
-012°20.736′N, 012°20.736′W   # N.B. If this looks weird online, set your browser's text encoding to UTF-8.
+12°20.736′N, 012°20.736′W   # N.B. If this looks weird online, set your browser's text encoding to UTF-8.
 
 >> puts Treasure.find(:first).location.latitude
 12.3456
@@ -87,8 +87,6 @@ Here's an example script/console session:
 To Do
 =====
 Tests/specs :-)
-Lots of DRY'ing.
-Clean up all the checks for nil in Location's accessors.
 Investigate implementing with ActiveRecord's multiparameter assignment.
 
 

@@ -58,47 +58,61 @@ module AirBlade
         attr_writer :latitude_degrees,  :latitude_minutes,  :latitude_milli_minutes,  :latitude_hemisphere
         attr_writer :longitude_degrees, :longitude_minutes, :longitude_milli_minutes, :longitude_hemisphere
 
-        # TODO: clean up all the checks for nil:
+        # The pattern for the accessors is:
+        # If the user has given a value for the field, return that (held in instance variables).
+        # Else if we have an overall latitude or longitude, return the part of it relevant to the field.
+        # Else return nil.
 
         def latitude_degrees
-          @latitude_degrees || (latitude.nil? ? nil : latitude.abs.to_i)
+          field_value @latitude_degrees, latitude, lambda { latitude.abs.to_i }
         end
 
         def latitude_minutes
-          @latitude_minutes || (latitude.nil? ? nil : lat_minutes_as_float.to_i)
+          field_value @latitude_minutes, latitude, lambda { lat_minutes_as_float.to_i }
         end
 
         def latitude_milli_minutes
-          @latitude_milli_minutes || (latitude.nil? ? nil : ((lat_minutes_as_float - lat_minutes_as_float.to_i) * 1000).to_i)
+          field_value @latitude_milli_minutes, latitude, lambda { ((lat_minutes_as_float - lat_minutes_as_float.to_i) * 1000).to_i }
         end
 
         def latitude_hemisphere
-          @latitude_hemisphere || (latitude.nil? ? nil : ((latitude > 0) ? 'N' : 'S' ))
+          field_value @latitude_hemisphere, latitude, lambda { ((latitude > 0) ? 'N' : 'S' ) }
         end
 
 
         def longitude_degrees
-          @longitude_degrees || (longitude.nil? ? nil : longitude.abs.to_i)
+          field_value @longitude_degrees, longitude, lambda { longitude.abs.to_i }
         end
 
         def longitude_minutes
-          @longitude_minutes || (longitude.nil? ? nil : long_minutes_as_float.to_i)
+          field_value @longitude_minutes, longitude, lambda { long_minutes_as_float.to_i }
         end
 
         def longitude_milli_minutes
-          @longitude_milli_minutes || (longitude.nil? ? nil : ((long_minutes_as_float - long_minutes_as_float.to_i) * 1000).to_i)
+          field_value @longitude_milli_minutes, longitude, lambda { ((long_minutes_as_float - long_minutes_as_float.to_i) * 1000).to_i }
         end
 
         def longitude_hemisphere
-          @longitude_hemisphere || (longitude.nil? ? nil : ( (longitude > 0) ? 'E' : 'W' ))
+          field_value @longitude_hemisphere, longitude, lambda { ((longitude > 0) ? 'E' : 'W' ) }
         end
 
         private
+
+        def field_value(ivar, latitude_or_longitude, current)
+          if ivar
+            ivar
+          elsif latitude_or_longitude
+            current.call
+          else
+            nil
+          end
+        end
 
         # Constructs a floating-point latitude from the constituent parts.
         # If they are all blank, we don't bother.
         def construct_latitude
           unless [@latitude_degrees, @latitude_minutes, @latitude_milli_minutes, @latitude_hemisphere].all? { |attr| attr.blank? }
+            default_to_zero :@latitude_minutes, :@latitude_milli_minutes
             lat_deg       = to_bounded_float @latitude_degrees,         90, :@latitude_degrees_invalid
             lat_min       = to_bounded_float @latitude_minutes,         59, :@latitude_minutes_invalid
             lat_milli_min = to_bounded_float @latitude_milli_minutes,  999, :@latitude_milli_minutes_invalid
@@ -115,6 +129,7 @@ module AirBlade
         # If they are all blank, we don't bother.
         def construct_longitude
           unless [@longitude_degrees, @longitude_minutes, @longitude_milli_minutes, @longitude_hemisphere].all? { |attr| attr.blank? }
+            default_to_zero :@longitude_minutes, :@longitude_milli_minutes
             long_deg       = to_bounded_float @longitude_degrees,        180, :@longitude_degrees_invalid
             long_min       = to_bounded_float @longitude_minutes,         59, :@longitude_minutes_invalid
             long_milli_min = to_bounded_float @longitude_milli_minutes,  999, :@longitude_milli_minutes_invalid
@@ -157,6 +172,12 @@ module AirBlade
           f = degrees + ( (minutes + (milli_minutes / 1000)) / 60 )
           f = f * -1 if hemisphere == 'S' || hemisphere == 'W'
           f
+        end
+
+        def default_to_zero(*fields)
+          fields.each do |field|
+            instance_variable_set field, 0 if instance_variable_get(field).blank? || instance_variable_get(field).to_s == '0'
+          end
         end
 
       end

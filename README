@@ -75,7 +75,7 @@ You'll get validation on every field (degrees, minutes, milli-minutes, hemispher
 Here's an example script/console session:
 
 >> puts Treasure.find(:first).location
-12°20.736′N, 12°20.736′W   # N.B. If this looks weird online, set your browser's text encoding to UTF-8.
+012°20.736′N, 012°20.736′W   # N.B. If this looks weird online, set your browser's text encoding to UTF-8.
 
 >> puts Treasure.find(:first).location.latitude
 12.3456

@@ -106,8 +106,7 @@ module AirBlade
 
             unless @latitude_degrees_invalid       || @latitude_minutes_invalid    ||
                    @latitude_milli_minutes_invalid || @latitude_hemisphere_invalid
-              self.latitude = lat_deg + ( (lat_min + (lat_milli_min / 1000)) / 60 )
-              self.latitude = self.latitude * -1 if lat_hem == 'S'
+              self.latitude = coordinates_to_float lat_deg, lat_min, lat_milli_min, lat_hem
             end
           end
         end
@@ -123,8 +122,7 @@ module AirBlade
 
             unless @longitude_degrees_invalid       || @longitude_minutes_invalid    ||
                    @longitude_milli_minutes_invalid || @longitude_hemisphere_invalid
-              self.longitude = long_deg + ( (long_min + (long_milli_min / 1000)) / 60 )
-              self.longitude = self.longitude * -1 if long_hem == 'W'
+              self.longitude = coordinates_to_float long_deg, long_min, long_milli_min, long_hem
             end
           end
         end
@@ -153,6 +151,12 @@ module AirBlade
           else
             instance_variable_set error_flag, true
           end
+        end
+
+        def coordinates_to_float(degrees, minutes, milli_minutes, hemisphere)
+          f = degrees + ( (minutes + (milli_minutes / 1000)) / 60 )
+          f = f * -1 if hemisphere == 'S' || hemisphere == 'W'
+          f
         end
 
       end

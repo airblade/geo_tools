@@ -83,7 +83,7 @@ module AirBlade
         end
 
         def longitude
-          to_float longitude_degrees, longitude_minutes, longitude_decimal_minutes, latitude_hemisphere
+          to_float longitude_degrees, longitude_minutes, longitude_decimal_minutes, longitude_hemisphere
         end
 
         def to_s

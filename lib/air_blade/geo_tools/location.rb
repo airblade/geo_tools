@@ -92,13 +92,13 @@ module AirBlade
 
           lat_fields = ["%02d" % latitude_degrees,
                         "%02d" % latitude_minutes,
-                        "%02d" % latitude_decimal_minutes,
+                        latitude_decimal_minutes.to_s.ljust(2, '0'),
                         latitude_hemisphere]
           lat = lat_fields.zip(units).map{ |f| f.join }.join
 
           long_fields = ["%02d" % longitude_degrees,
                          "%02d" % longitude_minutes,
-                         "%02d" % longitude_decimal_minutes,
+                         longitude_decimal_minutes.to_s.ljust(2, '0'),
                          longitude_hemisphere]
           long = long_fields.zip(units).map{ |f| f.join }.join
 

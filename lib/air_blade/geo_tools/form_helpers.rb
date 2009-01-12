@@ -48,7 +48,7 @@ module AirBlade
         width = opts[:decimal_minutes][:maxlength]
         output << plain_text_field("latitude_decimal_minutes",
                              options.merge(:maxlength => width,
-                                           :value     => @object.send("latitude_decimal_minutes").to_s.ljust(width, '0')))
+                                           :value     => @object.send("latitude_decimal_minutes_as_string").ljust(width, '0')))
         output << opts[:decimal_minutes][:symbol]
 
         # Hemisphere.
@@ -87,7 +87,7 @@ module AirBlade
         width = opts[:decimal_minutes][:maxlength]
         output << plain_text_field("longitude_decimal_minutes",
                              options.merge(:maxlength => width,
-                                           :value     => @object.send("longitude_decimal_minutes").to_s.ljust(width, '0')))
+                                           :value     => @object.send("longitude_decimal_minutes_as_string").ljust(width, '0')))
         output << opts[:decimal_minutes][:symbol]
 
         # Hemisphere.

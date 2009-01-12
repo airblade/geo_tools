@@ -23,9 +23,9 @@ Assumptions
     ...
 
     # Stuff GeoTools needs:
-    t.integer :latitude_degrees,  :latitude_minutes,  :latitude_decimal_minutes
+    t.integer :latitude_degrees,  :latitude_minutes,  :latitude_decimal_minutes, :latitude_decimal_minutes_width
     t.string  :latitude_hemisphere
-    t.integer :longitude_degrees, :longitude_minutes, :longitude_decimal_minutes
+    t.integer :longitude_degrees, :longitude_minutes, :longitude_decimal_minutes, :longitude_decimal_minutes_width
     t.string  :longitude_hemisphere
   end
 
@@ -41,6 +41,8 @@ Assumptions
   yy is minutes (0 <= integer <= 59; maximum length of 2 digits; optional; defaults to 0)
   zz is decimal-minutes (0 <= integer <= 99; maximum length of 2 digits; optional; defaults to 0)
   h is hemisphere ('N' or 'S')
+
+  Note with decimal minutes 2, 20 and 200000 are equivalent.  This is because 3.2, 3.20 and 3.200000 are equivalent.
 
 * Similarly, a longitude should be entered on a form like this:
 
@@ -92,6 +94,7 @@ To Do
 * Use +method+ in the form helpers so user can give database columns different names (e.g. my_lat_degrees, etc).
   See the way Paperclip allows different attachment names.
 * DRY up form helper methods.
+* DRY up location.rb.
 * Tests/specs :-)
 * Investigate implementing with ActiveRecord's multiparameter assignment.
 

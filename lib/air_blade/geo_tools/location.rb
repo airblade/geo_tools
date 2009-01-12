@@ -1,6 +1,3 @@
-# NOTE: Perhaps use ActiveRecord's multiparameter assignment instead.
-#       Cf ActiveRecord::Base#assign_multiparameter_attributes(pairs),
-#          ActiveRecord::Base#execute_callstack_for_multiparameter_attributes(pairs), etc.
 module AirBlade
   module GeoTools
     module Location
@@ -37,6 +34,11 @@ module AirBlade
                                             :message                   => 'Decimal minutes are invalid',
                                             :for                       => :latitude
 
+              validates_numericality_of_for :latitude_decimal_minutes_width,
+                                            :only_integer             => true,
+                                            :greater_than_or_equal_to => 0,
+                                            :for                      => :latitude
+
               validates_inclusion_of_for    :latitude_hemisphere,
                                             :in      => %w( N S ),
                                             :message => 'Hemisphere is invalid',
@@ -62,6 +64,11 @@ module AirBlade
                                             :message                  => 'Decimal minutes are invalid',
                                             :for                      => :longitude
 
+              validates_numericality_of_for :longitude_decimal_minutes_width,
+                                            :only_integer             => true,
+                                            :greater_than_or_equal_to => 0,
+                                            :for                      => :longitude
+
               validates_inclusion_of_for    :longitude_hemisphere,
                                             :in      => %w( E W ),
                                             :message => 'Hemisphere is invalid',
@@ -78,12 +85,43 @@ module AirBlade
       end
 
       module InstanceMethods
+
+        def latitude_decimal_minutes=(value)
+          unless value.nil?
+            width = value.to_s.length
+            value = value.to_i
+
+            write_attribute :latitude_decimal_minutes, value
+            write_attribute :latitude_decimal_minutes_width, width
+          end
+        end
+
+        def latitude_decimal_minutes_as_string
+          "%0#{latitude_decimal_minutes_width}d" % latitude_decimal_minutes
+        end
+
+        def longitude_decimal_minutes=(value)
+          unless value.nil?
+            width = value.to_s.length
+            value = value.to_i
+
+            write_attribute :longitude_decimal_minutes, value
+            write_attribute :longitude_decimal_minutes_width, width
+          end
+        end
+
+        def longitude_decimal_minutes_as_string
+          "%0#{longitude_decimal_minutes_width}d" % longitude_decimal_minutes
+        end
+
         def latitude
-          to_float latitude_degrees, latitude_minutes, latitude_decimal_minutes, latitude_hemisphere
+          to_float latitude_degrees, latitude_minutes, latitude_decimal_minutes,
+                   latitude_decimal_minutes_width, latitude_hemisphere
         end
 
         def longitude
-          to_float longitude_degrees, longitude_minutes, longitude_decimal_minutes, longitude_hemisphere
+          to_float longitude_degrees, longitude_minutes, longitude_decimal_minutes,
+                   longitude_decimal_minutes_width, longitude_hemisphere
         end
 
         def to_s
@@ -92,13 +130,13 @@ module AirBlade
 
           lat_fields = ["%02d" % latitude_degrees,
                         "%02d" % latitude_minutes,
-                        latitude_decimal_minutes.to_s.ljust(2, '0'),
+                        latitude_decimal_minutes_as_string.ljust(2, '0'),
                         latitude_hemisphere]
           lat = lat_fields.zip(units).map{ |f| f.join }.join
 
           long_fields = ["%02d" % longitude_degrees,
                          "%02d" % longitude_minutes,
-                         longitude_decimal_minutes.to_s.ljust(2, '0'),
+                         longitude_decimal_minutes_as_string.ljust(2, '0'),
                          longitude_hemisphere]
           long = long_fields.zip(units).map{ |f| f.join }.join
 
@@ -107,14 +145,14 @@ module AirBlade
 
         private
 
-        def to_float(degrees, minutes, decimal_minutes, hemisphere)
+        def to_float(degrees, minutes, decimal_minutes, decimal_minutes_width, hemisphere)
           return nil if degrees.nil? and minutes.nil? and decimal_minutes.nil?
           degrees ||= 0
           minutes ||= 0
           decimal_minutes ||= 0
 
           f = degrees.to_f
-          f = f + (minutes.to_f + decimal_minutes.to_f / 10 ** decimal_minutes.to_s.length) / 60.0
+          f = f + (minutes.to_f + decimal_minutes.to_f / 10 ** decimal_minutes_width) / 60.0
           f = f * -1 if hemisphere == 'S' or hemisphere == 'W'
           f
         end

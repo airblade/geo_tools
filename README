@@ -9,6 +9,8 @@ This plugin does three things:
 * Lets your model acts_as_location, to work seamlessly with the form helpers.
 * Validates the location data entered on the form and in the database.
 
+A model which acts_as_location also get a +within+ method that returns all locations within the given bounding box, such as you would have on a Google map.
+
 
 Assumptions
 ===========

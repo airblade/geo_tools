@@ -77,55 +77,43 @@ module AirBlade
               before_validation :set_empty_values
             END
             class_eval code, __FILE__, __LINE__
+
+            # Returns all locations within (to a degree) the given bounding box.
+            #
+            # This is useful for finding all locations within the area covered by a Google map.
+            #
+            # The parameters should be positive/negative floats.
+            named_scope :within, lambda { |_sw_lat, _sw_lng, _ne_lat, _ne_lng|
+              # Nearest degree is precise enough and makes the SQL much simpler.
+              sw_lat, sw_lng, ne_lat, ne_lng = _sw_lat.round, _sw_lng.round, _ne_lat.round, _ne_lng.round
+
+              # Latitude conditions.
+              if sw_lat > 0 && ne_lat > 0     # northern hemisphere
+                condition_lat = ["latitude_degrees > ? AND latitude_degrees < ? AND latitude_hemisphere = 'N'", sw_lat, ne_lat]
+              elsif sw_lat < 0 && ne_lat < 0  # southern hemisphere
+                condition_lat = ["latitude_degrees < ? AND latitude_degrees > ? AND latitude_hemisphere = 'S'", sw_lat.abs, ne_lat.abs]
+              elsif sw_lat <= 0 && ne_lat >= 0  # straddles equator
+                condition_lat = ["(latitude_degrees <= ? AND latitude_hemisphere = 'S') OR (latitude_degrees <= ? AND latitude_hemisphere = 'N')", sw_lat.abs, ne_lat]
+              end
+
+              # Longitude conditions.
+              if sw_lng > 0 && ne_lng > 0     # eastern hemisphere
+                condition_lng = ["longitude_degrees > ? AND longitude_degrees < ? AND longitude_hemisphere = 'E'", sw_lng, ne_lng]
+              elsif sw_lng < 0 && ne_lng < 0  # western hemisphere
+                condition_lng = ["longitude_degrees < ? AND longitude_degrees > ? AND longitude_hemisphere = 'W'", sw_lng.abs, ne_lng.abs]
+              elsif sw_lng <= 0 && ne_lng >= 0  # straddles prime meridian
+                condition_lng = ["(longitude_degrees <= ? AND longitude_hemisphere = 'W') OR (longitude_degrees <= ? AND longitude_hemisphere = 'E')", sw_lng.abs, ne_lng]
+              end
+
+              # Combined latitude and longitude conditions.
+              {:conditions => merge_conditions(condition_lat, condition_lng)}
+            }
+
           end
         end
       end
 
       module ClassMethods
-
-        # Returns all locations within (to a degree) the given bounding box.
-        #
-        # This is useful for finding all locations within the area covered by a Google map.
-        #
-        # The parameters should be positive/negative floats.
-        def within(sw_lat, sw_lng, ne_lat, ne_lng, *args)
-          # Nearest degree is precise enough and makes the SQL much simpler.
-          sw_lat, sw_lng, ne_lat, ne_lng = sw_lat.round, sw_lng.round, ne_lat.round, ne_lng.round
-
-          # Latitude conditions.
-          if sw_lat > 0 && ne_lat > 0     # northern hemisphere
-            condition_lat = ["latitude_degrees > ? AND latitude_degrees < ? AND latitude_hemisphere = 'N'", sw_lat, ne_lat]
-          elsif sw_lat < 0 && ne_lat < 0  # southern hemisphere
-            condition_lat = ["latitude_degrees < ? AND latitude_degrees > ? AND latitude_hemisphere = 'S'", sw_lat.abs, ne_lat.abs]
-          elsif sw_lat <= 0 && ne_lat >= 0  # straddles equator
-            condition_lat = ["(latitude_degrees <= ? AND latitude_hemisphere = 'S') OR (latitude_degrees <= ? AND latitude_hemisphere = 'N')", sw_lat.abs, ne_lat]
-          end
-
-          # Longitude conditions.
-          if sw_lng > 0 && ne_lng > 0     # eastern hemisphere
-            condition_lng = ["longitude_degrees > ? AND longitude_degrees < ? AND longitude_hemisphere = 'E'", sw_lng, ne_lng]
-          elsif sw_lng < 0 && ne_lng < 0  # western hemisphere
-            condition_lng = ["longitude_degrees < ? AND longitude_degrees > ? AND longitude_hemisphere = 'W'", sw_lng.abs, ne_lng.abs]
-          elsif sw_lng <= 0 && ne_lng >= 0  # straddles prime meridian
-            condition_lng = ["(longitude_degrees <= ? AND longitude_hemisphere = 'W') OR (longitude_degrees <= ? AND longitude_hemisphere = 'E')", sw_lng.abs, ne_lng]
-          end
-
-          # Combined latitude and longitude conditions.
-          conditions = merge_conditions condition_lat, condition_lng
-
-          # Incorporate conventional finder *args.
-          options = args.extract_options!
-          if options[:conditions]
-            options[:conditions] = merge_conditions options[:conditions], conditions
-          else
-            options[:conditions] = conditions
-          end
-
-          args.push :all if args.empty?
-          args.push options
-          find *args
-        end
-
       end
 
       module InstanceMethods

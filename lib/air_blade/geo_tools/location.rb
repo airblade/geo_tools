@@ -88,7 +88,7 @@ module AirBlade
         # This is useful for finding all locations within the area covered by a Google map.
         #
         # The parameters should be positive/negative floats.
-        def within(sw_lat, sw_lng, ne_lat, ne_lng)
+        def within(sw_lat, sw_lng, ne_lat, ne_lng, *args)
           # Nearest degree is precise enough and makes the SQL much simpler.
           sw_lat, sw_lng, ne_lat, ne_lng = sw_lat.round, sw_lng.round, ne_lat.round, ne_lng.round
 
@@ -110,8 +110,20 @@ module AirBlade
             condition_lng = ["(longitude_degrees < ? AND longitude_hemisphere = 'W') OR (longitude_degrees < ? AND longitude_hemisphere = 'E')", sw_lng.abs, ne_lng]
           end
 
-          conditions = [ "#{condition_lat.shift} AND #{condition_lng.shift}", condition_lat, condition_lng ].flatten
-          all :conditions => conditions
+          # Combined latitude and longitude conditions.
+          conditions = merge_conditions condition_lat, condition_lng
+
+          # Incorporate conventional finder *args.
+          options = args.extract_options!
+          if options[:conditions]
+            options[:conditions] = merge_conditions options[:conditions], conditions
+          else
+            options[:conditions] = conditions
+          end
+
+          args.push :all if args.empty?
+          args.push options
+          find *args
         end
 
       end

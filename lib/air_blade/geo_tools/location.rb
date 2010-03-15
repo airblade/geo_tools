@@ -209,3 +209,6 @@ module AirBlade
     end
   end
 end
+
+
+ActiveRecord::Base.send :include, AirBlade::GeoTools::Location

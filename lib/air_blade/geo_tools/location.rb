@@ -78,31 +78,70 @@ module AirBlade
             END
             class_eval code, __FILE__, __LINE__
 
-            # Returns all locations within (to a degree) the given bounding box.
+            # Returns all locations within the given bounding box, to an accuracy of 1 minute.
             #
             # This is useful for finding all locations within the area covered by a Google map.
             #
             # The parameters should be positive/negative floats.
-            named_scope :within, lambda { |_sw_lat, _sw_lng, _ne_lat, _ne_lng|
-              # Nearest degree is precise enough and makes the SQL much simpler.
-              sw_lat, sw_lng, ne_lat, ne_lng = _sw_lat.round, _sw_lng.round, _ne_lat.round, _ne_lng.round
+            named_scope :within, lambda { |sw_lat, sw_lng, ne_lat, ne_lng|
+              sw_lat_degs = sw_lat.to_i.abs
+              sw_lat_mins = ((sw_lat - sw_lat.to_i) * 60.0).round.abs
+              ne_lat_degs = ne_lat.to_i.abs
+              ne_lat_mins = ((ne_lat - ne_lat.to_i) * 60.0).round.abs
+
+              sw_lng_degs = sw_lng.to_i.abs
+              sw_lng_mins = ((sw_lng - sw_lng.to_i) * 60.0).round.abs
+              ne_lng_degs = ne_lng.to_i.abs
+              ne_lng_mins = ((ne_lng - ne_lng.to_i) * 60.0).round.abs
 
               # Latitude conditions.
-              if sw_lat > 0 && ne_lat > 0     # northern hemisphere
-                condition_lat = ["latitude_degrees >= ? AND latitude_degrees <= ? AND latitude_hemisphere = 'N'", sw_lat, ne_lat]
-              elsif sw_lat < 0 && ne_lat < 0  # southern hemisphere
-                condition_lat = ["latitude_degrees <= ? AND latitude_degrees >= ? AND latitude_hemisphere = 'S'", sw_lat.abs, ne_lat.abs]
+              if sw_lat > 0 && ne_lat > 0       # northern hemisphere
+                condition_lat_h  = 'latitude_hemisphere = "N"'
+                condition_lat_sw = ["(latitude_degrees > ?) OR (latitude_degrees = ? AND latitude_minutes >= ?)", sw_lat_degs, sw_lat_degs, sw_lat_mins]
+                condition_lat_ne = ["(latitude_degrees < ?) OR (latitude_degrees = ? AND latitude_minutes <= ?)", ne_lat_degs, ne_lat_degs, ne_lat_mins]
+                condition_lat    = merge_conditions condition_lat_h, condition_lat_sw, condition_lat_ne
+
+              elsif sw_lat < 0 && ne_lat < 0    # southern hemisphere
+                condition_lat_h  = 'latitude_hemisphere = "S"'
+                condition_lat_sw = ["(latitude_degrees < ?) OR (latitude_degrees = ? AND latitude_minutes <= ?)", sw_lat_degs, sw_lat_degs, sw_lat_mins]
+                condition_lat_ne = ["(latitude_degrees > ?) OR (latitude_degrees = ? AND latitude_minutes >= ?)", ne_lat_degs, ne_lat_degs, ne_lat_mins]
+                condition_lat    = merge_conditions condition_lat_h, condition_lat_sw, condition_lat_ne
+
               elsif sw_lat <= 0 && ne_lat >= 0  # straddles equator
-                condition_lat = ["(latitude_degrees <= ? AND latitude_hemisphere = 'S') OR (latitude_degrees <= ? AND latitude_hemisphere = 'N')", sw_lat.abs, ne_lat]
+                condition_lat_h  = 'latitude_hemisphere = "S"'
+                condition_lat_sw = ["(latitude_degrees < ?) OR (latitude_degrees = ? AND latitude_minutes <= ?)", sw_lat_degs, sw_lat_degs, sw_lat_mins]
+                condition_lat_s  = merge_conditions condition_lat_h, condition_lat_sw
+
+                condition_lat_h  = 'latitude_hemisphere = "N"'
+                condition_lat_ne = ["(latitude_degrees < ?) OR (latitude_degrees = ? AND latitude_minutes <= ?)", ne_lat_degs, ne_lat_degs, ne_lat_mins]
+                condition_lat_n  = merge_conditions condition_lat_h, condition_lat_ne
+
+                condition_lat    = merge_or_conditions condition_lat_s, condition_lat_n
               end
 
               # Longitude conditions.
-              if sw_lng > 0 && ne_lng > 0     # eastern hemisphere
-                condition_lng = ["longitude_degrees >= ? AND longitude_degrees <= ? AND longitude_hemisphere = 'E'", sw_lng, ne_lng]
-              elsif sw_lng < 0 && ne_lng < 0  # western hemisphere
-                condition_lng = ["longitude_degrees <= ? AND longitude_degrees >= ? AND longitude_hemisphere = 'W'", sw_lng.abs, ne_lng.abs]
+              if sw_lng > 0 && ne_lng > 0       # eastern hemisphere
+                condition_lng_h  = 'longitude_hemisphere = "E"'
+                condition_lng_sw = ["(longitude_degrees > ?) OR (longitude_degrees = ? AND longitude_minutes >= ?)", sw_lng_degs, sw_lng_degs, sw_lng_mins]
+                condition_lng_ne = ["(longitude_degrees < ?) OR (longitude_degrees = ? AND longitude_minutes <= ?)", ne_lng_degs, ne_lng_degs, ne_lng_mins]
+                condition_lng    = merge_conditions condition_lng_h, condition_lng_sw, condition_lng_ne
+
+              elsif sw_lng < 0 && ne_lng < 0    # western hemisphere
+                condition_lng_h  = 'longitude_hemisphere = "W"'
+                condition_lng_sw = ["(longitude_degrees < ?) OR (longitude_degrees = ? AND longitude_minutes <= ?)", sw_lng_degs, sw_lng_degs, sw_lng_mins]
+                condition_lng_ne = ["(longitude_degrees > ?) OR (longitude_degrees = ? AND longitude_minutes >= ?)", ne_lng_degs, ne_lng_degs, ne_lng_mins]
+                condition_lng    = merge_conditions condition_lng_h, condition_lng_sw, condition_lng_ne
+
               elsif sw_lng <= 0 && ne_lng >= 0  # straddles prime meridian
-                condition_lng = ["(longitude_degrees <= ? AND longitude_hemisphere = 'W') OR (longitude_degrees <= ? AND longitude_hemisphere = 'E')", sw_lng.abs, ne_lng]
+                condition_lng_h  = 'longitude_hemisphere = "W"'
+                condition_lng_sw = ["(longitude_degrees < ?) OR (longitude_degrees = ? AND longitude_minutes <= ?)", sw_lng_degs, sw_lng_degs, sw_lng_mins]
+                condition_lng_w  = merge_conditions condition_lng_h, condition_lng_sw
+
+                condition_lng_h  = 'longitude_hemisphere = "E"'
+                condition_lng_ne = ["(longitude_degrees < ?) OR (longitude_degrees = ? AND longitude_minutes <= ?)", ne_lng_degs, ne_lng_degs, ne_lng_mins]
+                condition_lng_e  = merge_conditions condition_lng_h, condition_lng_ne
+
+                condition_lng    = merge_or_conditions condition_lng_w, condition_lng_e
               end
 
               # Combined latitude and longitude conditions.
@@ -114,6 +153,20 @@ module AirBlade
       end
 
       module ClassMethods
+        # Merges conditions so that the result is a valid +condition+.
+        # Adapted from ActiveRecord::Base#merge_conditions.
+        def merge_or_conditions(*conditions)
+          segments = []
+
+          conditions.each do |condition|
+            unless condition.blank?
+              sql = sanitize_sql(condition)
+              segments << sql unless sql.blank?
+            end
+          end
+
+          "(#{segments.join(') OR (')})" unless segments.empty?
+        end
       end
 
       module InstanceMethods
@@ -209,6 +262,5 @@ module AirBlade
     end
   end
 end
-
 
 ActiveRecord::Base.send :include, AirBlade::GeoTools::Location

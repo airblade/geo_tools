@@ -42,73 +42,94 @@ class GeoToolsTest < ActiveSupport::TestCase
 
     context 'NE quadrant' do
       setup do
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-        Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'E'
+        @a = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E', :latitude_minutes => '12', :longitude_minutes => '47'
+        @b = Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+        @c = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'E'
       end
-      should 'return locations to nearest degree' do
-        assert_equal 1, Treasure.within(1, 1, 42, 153).length
-        assert_equal 2, Treasure.within(1, 1, 43, 153).length
-        assert_equal 2, Treasure.within(1, 1, 42, 154).length
+      should 'return locations to nearest minute' do
+        assert_same_elements [],           Treasure.within(1, 1, 42, 153)
+        assert_same_elements [@a, @b, @c], Treasure.within(1, 1, 43, 154)
+        assert_same_elements [@c],         Treasure.within(1, 1, f(42, 11), 154)
+        assert_same_elements [@a, @c],     Treasure.within(1, 1, f(42, 12), 154)
+        assert_same_elements [@b],         Treasure.within(1, 1, 43, f(153, 46))
+        assert_same_elements [@a, @b],     Treasure.within(1, 1, 43, f(153, 47))
       end
       teardown { Treasure.destroy_all }
     end
 
     context 'NW quadrant' do
       setup do
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
-        Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'W'
+        @a = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W', :latitude_minutes => '12', :longitude_minutes => '47'
+        @b = Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+        @c = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'W'
       end
-      should 'return locations to nearest degree' do
-        assert_equal 1, Treasure.within(1, -153, 42, -1).length
-        assert_equal 2, Treasure.within(1, -154, 42, -1).length
-        assert_equal 2, Treasure.within(1, -153, 43, -1).length
+      should 'return locations to nearest minute' do
+        assert_same_elements [],           Treasure.within(1, -153, 42, -1)
+        assert_same_elements [@a, @b, @c], Treasure.within(1, -154, 43, -1)
+        assert_same_elements [@c],         Treasure.within(1, -154, f(42, 11), -1)
+        assert_same_elements [@a, @c],     Treasure.within(1, -154, f(42, 12), -1)
+        assert_same_elements [@b],         Treasure.within(1, f(-153, 46), 43, -1)
+        assert_same_elements [@a, @b],     Treasure.within(1, f(-153, 47), 43, -1)
       end
       teardown { Treasure.destroy_all }
     end
 
     context 'SE quadrant' do
       setup do
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-        Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'E'
+        @a = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E', :latitude_minutes => '12', :longitude_minutes => '47'
+        @b = Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+        @c = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'E'
       end
-      should 'return locations to nearest degree' do
-        assert_equal 1, Treasure.within(-42, 1, -1, 153).length
-        assert_equal 2, Treasure.within(-43, 1, -1, 153).length
-        assert_equal 2, Treasure.within(-42, 1, -1, 154).length
+      should 'return locations to nearest minute' do
+        assert_same_elements [],           Treasure.within(-42, 1, -1, 153)
+        assert_same_elements [@a, @b, @c], Treasure.within(-43, 1, -1, 154)
+        assert_same_elements [@c],         Treasure.within(f(-42, 11), 1, -1, 154)
+        assert_same_elements [@a, @c],     Treasure.within(f(-42, 12), 1, -1, 154)
+        assert_same_elements [@b],         Treasure.within(-43, 1, -1, f(153, 46))
+        assert_same_elements [@a, @b],     Treasure.within(-43, 1, -1, f(153, 47))
       end
       teardown { Treasure.destroy_all }
     end
 
     context 'SW quadrant' do
       setup do
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
-        Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'W'
+        @a = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W', :latitude_minutes => '12', :longitude_minutes => '47'
+        @b = Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+        @c = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'W'
       end
-      should 'return locations to nearest degree' do
-        assert_equal 1, Treasure.within(-42, -153, -1, -1).length
-        assert_equal 2, Treasure.within(-42, -154, -1, -1).length
-        assert_equal 2, Treasure.within(-43, -153, -1, -1).length
+      should 'return locations to nearest minute' do
+        assert_same_elements [],           Treasure.within(-42, -153, -1, -1)
+        assert_same_elements [@a, @b, @c], Treasure.within(-43, -154, -1, -1)
+        assert_same_elements [@c],         Treasure.within(f(-42, 11), -154, -1, -1)
+        assert_same_elements [@a, @c],     Treasure.within(f(-42, 12), -154, -1, -1)
+        assert_same_elements [@b],         Treasure.within(-43, f(-153, 46), -1, -1)
+        assert_same_elements [@a, @b],     Treasure.within(-43, f(-153, 47), -1, -1)
       end
       teardown { Treasure.destroy_all }
     end
 
     context 'straddling equator and prime meridian' do
       setup do
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+        @a = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E', :latitude_minutes => '12', :longitude_minutes => '47'
+        @b = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W', :latitude_minutes => '12', :longitude_minutes => '47'
+        @c = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E', :latitude_minutes => '12', :longitude_minutes => '47'
+        @d = Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W', :latitude_minutes => '12', :longitude_minutes => '47'
       end
       should 'return locations to nearest degree' do
-        assert_equal 4, Treasure.within(-42, -153, 42, 153).length
-        assert_equal 2, Treasure.within(-41, -153, 42, 153).length
-        assert_equal 2, Treasure.within(-42, -152, 42, 153).length
-        assert_equal 2, Treasure.within(-42, -153, 41, 153).length
-        assert_equal 2, Treasure.within(-42, -153, 42, 152).length
+        assert_same_elements [],               Treasure.within(-42, -153, 42, 153)
+        assert_same_elements [@a, @b, @c, @d], Treasure.within(-43, -154, 43, 154)
+
+        assert_same_elements [@a, @b],         Treasure.within(f(-42, 11), -154, 43, 154)
+        assert_same_elements [@a, @b, @c, @d], Treasure.within(f(-42, 12), -154, 43, 154)
+
+        assert_same_elements [@a, @c],         Treasure.within(-43, f(-153, 46), 43, 154)
+        assert_same_elements [@a, @b, @c, @d], Treasure.within(-43, f(-153, 47), 43, 154)
+
+        assert_same_elements [@c, @d],         Treasure.within(-43, -154, f(42, 11), 154)
+        assert_same_elements [@a, @b, @c, @d], Treasure.within(-43, -154, f(42, 12), 154)
+
+        assert_same_elements [@b, @d],         Treasure.within(-43, -154, 43, f(153, 46))
+        assert_same_elements [@a, @b, @c, @d], Treasure.within(-43, -154, 43, f(153, 47))
       end
       teardown { Treasure.destroy_all }
     end
@@ -128,6 +149,12 @@ class GeoToolsTest < ActiveSupport::TestCase
       :longitude_minutes         => 22,
       :longitude_decimal_minutes => 27,
       :longitude_hemisphere      => 'E' }.merge params
+  end
+
+  # Degrees: positive or negative.
+  # Minutes: always positive.
+  def f(degrees, minutes = 0)
+    degrees >= 0 ? degrees + (minutes / 60.0) : degrees - (minutes / 60.0)
   end
 
 end

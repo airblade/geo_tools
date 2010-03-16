@@ -31,6 +31,7 @@ begin
     gemspec.homepage = 'http://github.com/airblade/geo_tools'
     gemspec.authors = ['Andy Stewart']
   end
+  Jeweler::GemcutterTasks.new
 rescue LoadError
   puts 'Jeweler not available. Install it with: gem install jeweler'
 end

@@ -15,45 +15,45 @@ This plugin does four things:
 
 * Any model that acts_as_location has integers defined for each component of the latitude and longitude:
 
-    # In your model's migration's self.up method:
-    create_table :thingies do |t|
-      # Your model's various fields.
-      t.string :name
-      t.timestamps
-      ...
+        # In your model's migration's self.up method:
+        create_table :thingies do |t|
+          # Your model's various fields.
+          t.string :name
+          t.timestamps
+          ...
 
-      # Stuff GeoTools needs:
-      t.integer :latitude_degrees,  :latitude_minutes,  :latitude_decimal_minutes, :latitude_decimal_minutes_width
-      t.string  :latitude_hemisphere
-      t.integer :longitude_degrees, :longitude_minutes, :longitude_decimal_minutes, :longitude_decimal_minutes_width
-      t.string  :longitude_hemisphere
-    end
+          # Stuff GeoTools needs:
+          t.integer :latitude_degrees,  :latitude_minutes,  :latitude_decimal_minutes, :latitude_decimal_minutes_width
+          t.string  :latitude_hemisphere
+          t.integer :longitude_degrees, :longitude_minutes, :longitude_decimal_minutes, :longitude_decimal_minutes_width
+          t.string  :longitude_hemisphere
+        end
 
-  Storing the components separately like this avoids the round-trip rounding errors you get when using floating point numbers.  If you need a floating point representation in the database, for example to use a mapping plugin, simply add an after_update callback to your model to write the float value to the database.
+    Storing the components separately like this avoids the round-trip rounding errors you get when using floating point numbers.  If you need a floating point representation in the database, for example to use a mapping plugin, simply add an after_update callback to your model to write the float value to the database.
 
 * A latitude should be entered on a form like this:
 
-    xx <degree symbol> yy <decimal point> zz h
+        xx <degree symbol> yy <decimal point> zz h
 
-  where:
+    where:
 
-  xx is degrees (0 <= integer <= 90; maximum length of 2 digits)
-  yy is minutes (0 <= integer <= 59; maximum length of 2 digits; optional; defaults to 0)
-  zz is decimal-minutes (0 <= integer <= 99; maximum length of 2 digits; optional; defaults to 0)
-  h is hemisphere ('N' or 'S')
+        xx is degrees (0 <= integer <= 90; maximum length of 2 digits)
+        yy is minutes (0 <= integer <= 59; maximum length of 2 digits; optional; defaults to 0)
+        zz is decimal-minutes (0 <= integer <= 99; maximum length of 2 digits; optional; defaults to 0)
+        h is hemisphere ('N' or 'S')
 
-  Note with decimal minutes 2, 20 and 200000 are equivalent.  This is because 3.2, 3.20 and 3.200000 are equivalent.
+    Note with decimal minutes 2, 20 and 200000 are equivalent.  This is because 3.2, 3.20 and 3.200000 are equivalent.
 
 * Similarly, a longitude should be entered on a form like this:
 
-    xxx <degree symbol> yy <decimal point> zz h
+        xxx <degree symbol> yy <decimal point> zz h
 
-  where:
+    where:
 
-  xxx is degrees (0 <= integer <= 180; maximum length of 3 digits)
-  yy is minutes (0 <= integer <= 59; maximum length of 2 digits; optional; defaults to 0)
-  zz is decimal-minutes (0 <= integer <= 99; maximum length of 2 digits; optional; defaults to 0)
-  h is hemisphere ('E' or 'W')
+        xxx is degrees (0 <= integer <= 180; maximum length of 3 digits)
+        yy is minutes (0 <= integer <= 59; maximum length of 2 digits; optional; defaults to 0)
+        zz is decimal-minutes (0 <= integer <= 99; maximum length of 2 digits; optional; defaults to 0)
+        h is hemisphere ('E' or 'W')
 
 
 ## Example
@@ -90,6 +90,7 @@ Here's an example script/console session:
 ## To Do
 
 * Get tests to run transactionally so we don't have to clean out database in every single #setup method.
+* Refactor the multiple string columns into a single string column (per lat. and per lng.), and use virtual attributes to map the single db field back and forth to multiple form fields.  Add a float to 'cache' the lat/lng values.  This will simplify the code significantly.
 * Add a validation for the overall latitude and longitude values (to catch for example 90°00.01′N).
 * Use `method` in the form helpers so user can give database columns different names (e.g. my_lat_degrees, etc).
   See the way Paperclip allows different attachment names.

@@ -37,80 +37,81 @@ class GeoToolsTest < ActiveSupport::TestCase
     teardown { Treasure.destroy_all }
   end
 
-  context 'NE quadrant' do
+  context 'Location#within' do
     # TODO: use Factory Girl.
 
-    setup do
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-      Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'E'
-    end
-    should 'include locations within' do
-      assert_equal 1, Treasure.within(0, 0, 42, 153).length
-      assert_equal 2, Treasure.within(0, 0, 43, 153).length
-      assert_equal 2, Treasure.within(0, 0, 42, 154).length
+    context 'NE quadrant' do
+      setup do
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+        Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'E'
+      end
+      should 'return locations to nearest degree' do
+        assert_equal 1, Treasure.within(0, 0, 42, 153).length
+        assert_equal 2, Treasure.within(0, 0, 43, 153).length
+        assert_equal 2, Treasure.within(0, 0, 42, 154).length
+      end
+      teardown { Treasure.destroy_all }
     end
 
-    teardown { Treasure.destroy_all }
-  end
+    context 'NW quadrant' do
+      setup do
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+        Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'W'
+      end
+      should 'return locations to nearest degree' do
+        assert_equal 1, Treasure.within(0, -153, 42, 0).length
+        assert_equal 2, Treasure.within(0, -154, 42, 0).length
+        assert_equal 2, Treasure.within(0, -153, 43, 0).length
+      end
+      teardown { Treasure.destroy_all }
+    end
 
-  context 'NW quadrant' do
-    setup do
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
-      Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'W'
+    context 'SE quadrant' do
+      setup do
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+        Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'E'
+      end
+      should 'return locations to nearest degree' do
+        assert_equal 1, Treasure.within(-42, 0, 0, 153).length
+        assert_equal 2, Treasure.within(-43, 0, 0, 153).length
+        assert_equal 2, Treasure.within(-42, 0, 0, 154).length
+      end
+      teardown { Treasure.destroy_all }
     end
-    should 'include locations within' do
-      assert_equal 1, Treasure.within(0, -153, 42, 0).length
-      assert_equal 2, Treasure.within(0, -154, 42, 0).length
-      assert_equal 2, Treasure.within(0, -153, 43, 0).length
-    end
-    teardown { Treasure.destroy_all }
-  end
 
-  context 'SE quadrant' do
-    setup do
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-      Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'E'
+    context 'SW quadrant' do
+      setup do
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+        Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'W'
+      end
+      should 'return locations to nearest degree' do
+        assert_equal 1, Treasure.within(-42, -153, 0, 0).length
+        assert_equal 2, Treasure.within(-42, -154, 0, 0).length
+        assert_equal 2, Treasure.within(-43, -153, 0, 0).length
+      end
+      teardown { Treasure.destroy_all }
     end
-    should 'include locations within' do
-      assert_equal 1, Treasure.within(-42, 0, 0, 153).length
-      assert_equal 2, Treasure.within(-43, 0, 0, 153).length
-      assert_equal 2, Treasure.within(-42, 0, 0, 154).length
-    end
-    teardown { Treasure.destroy_all }
-  end
 
-  context 'SW quadrant' do
-    setup do
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
-      Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'W'
+    context 'straddling equator and prime meridian' do
+      setup do
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+        Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+      end
+      should 'return locations to nearest degree' do
+        assert_equal 4, Treasure.within(-42, -153, 42, 153).length
+        assert_equal 2, Treasure.within(-41, -153, 42, 153).length
+        assert_equal 2, Treasure.within(-42, -152, 42, 153).length
+        assert_equal 2, Treasure.within(-42, -153, 41, 153).length
+        assert_equal 2, Treasure.within(-42, -153, 42, 152).length
+      end
+      teardown { Treasure.destroy_all }
     end
-    should 'include locations within' do
-      assert_equal 1, Treasure.within(-42, -153, 0, 0).length
-      assert_equal 2, Treasure.within(-42, -154, 0, 0).length
-      assert_equal 2, Treasure.within(-43, -153, 0, 0).length
-    end
-    teardown { Treasure.destroy_all }
-  end
-
-  context 'straddling equator and prime meridian' do
-    setup do
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
-      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
-    end
-    should 'include locations within' do
-      assert_equal 4, Treasure.within(-42, -153, 42, 153).length
-      assert_equal 2, Treasure.within(-41, -153, 42, 153).length
-      assert_equal 2, Treasure.within(-42, -152, 42, 153).length
-      assert_equal 2, Treasure.within(-42, -153, 41, 153).length
-      assert_equal 2, Treasure.within(-42, -153, 42, 152).length
-    end
-    teardown { Treasure.destroy_all }
   end
 
 

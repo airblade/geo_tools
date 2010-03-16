@@ -41,7 +41,6 @@ class GeoToolsTest < ActiveSupport::TestCase
     # TODO: use Factory Girl.
 
     setup do
-      Treasure.destroy_all
       Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
       Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
       Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'E'
@@ -51,11 +50,12 @@ class GeoToolsTest < ActiveSupport::TestCase
       assert_equal 2, Treasure.within(0, 0, 43, 153).length
       assert_equal 2, Treasure.within(0, 0, 42, 154).length
     end
+
+    teardown { Treasure.destroy_all }
   end
 
   context 'NW quadrant' do
     setup do
-      Treasure.destroy_all
       Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
       Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
       Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'W'
@@ -65,11 +65,11 @@ class GeoToolsTest < ActiveSupport::TestCase
       assert_equal 2, Treasure.within(0, -154, 42, 0).length
       assert_equal 2, Treasure.within(0, -153, 43, 0).length
     end
+    teardown { Treasure.destroy_all }
   end
 
   context 'SE quadrant' do
     setup do
-      Treasure.destroy_all
       Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
       Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
       Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'E'
@@ -79,11 +79,11 @@ class GeoToolsTest < ActiveSupport::TestCase
       assert_equal 2, Treasure.within(-43, 0, 0, 153).length
       assert_equal 2, Treasure.within(-42, 0, 0, 154).length
     end
+    teardown { Treasure.destroy_all }
   end
 
   context 'SW quadrant' do
     setup do
-      Treasure.destroy_all
       Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
       Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
       Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'W'
@@ -93,11 +93,11 @@ class GeoToolsTest < ActiveSupport::TestCase
       assert_equal 2, Treasure.within(-42, -154, 0, 0).length
       assert_equal 2, Treasure.within(-43, -153, 0, 0).length
     end
+    teardown { Treasure.destroy_all }
   end
 
   context 'straddling equator and prime meridian' do
     setup do
-      Treasure.destroy_all
       Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
       Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
       Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
@@ -110,6 +110,7 @@ class GeoToolsTest < ActiveSupport::TestCase
       assert_equal 2, Treasure.within(-42, -153, 41, 153).length
       assert_equal 2, Treasure.within(-42, -153, 42, 152).length
     end
+    teardown { Treasure.destroy_all }
   end
 
 

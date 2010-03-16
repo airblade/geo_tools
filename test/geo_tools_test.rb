@@ -4,12 +4,10 @@ class Treasure < ActiveRecord::Base
   acts_as_location
 end
 
-class GeoToolsTest < Test::Unit::TestCase
+class GeoToolsTest < ActiveSupport::TestCase
 
   context 'A location model' do
-    setup do
-      @treasure = Treasure.new
-    end
+    setup { @treasure = Treasure.new }
 
     should 'convert northern hemisphere latitude fields to a positive float' do
       @treasure.update_attributes location
@@ -23,21 +21,101 @@ class GeoToolsTest < Test::Unit::TestCase
 
     should 'convert eastern hemisphere longitude fields to a positive float' do
       @treasure.update_attributes location
-      assert_in_delta 153.7045, @treasure.longitude, 0.0001
+      assert_in_delta 153.37117, @treasure.longitude, 0.0001
     end
 
     should 'convert western hemisphere longitude fields to a negative float' do
       @treasure.update_attributes location(:longitude_hemisphere => 'W')
-      assert_in_delta -153.7045, @treasure.longitude, 0.0001
+      assert_in_delta -153.37117, @treasure.longitude, 0.0001
     end
 
     should 'display a pretty #to_s' do
       @treasure.update_attributes location
-      assert_equal "42°57.35′N, 153°42.27′E", @treasure.to_s
+      assert_equal "42°57.35′N, 153°22.27′E", @treasure.to_s
+    end
+
+    teardown { Treasure.destroy_all }
+  end
+
+  context 'NE quadrant' do
+    # TODO: use Factory Girl.
+
+    setup do
+      Treasure.destroy_all
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+      Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'E'
+    end
+    should 'include locations within' do
+      assert_equal 1, Treasure.within(0, 0, 42, 153).length
+      assert_equal 2, Treasure.within(0, 0, 43, 153).length
+      assert_equal 2, Treasure.within(0, 0, 42, 154).length
     end
   end
 
+  context 'NW quadrant' do
+    setup do
+      Treasure.destroy_all
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+      Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'W'
+    end
+    should 'include locations within' do
+      assert_equal 1, Treasure.within(0, -153, 42, 0).length
+      assert_equal 2, Treasure.within(0, -154, 42, 0).length
+      assert_equal 2, Treasure.within(0, -153, 43, 0).length
+    end
+  end
+
+  context 'SE quadrant' do
+    setup do
+      Treasure.destroy_all
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+      Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'E'
+    end
+    should 'include locations within' do
+      assert_equal 1, Treasure.within(-42, 0, 0, 153).length
+      assert_equal 2, Treasure.within(-43, 0, 0, 153).length
+      assert_equal 2, Treasure.within(-42, 0, 0, 154).length
+    end
+  end
+
+  context 'SW quadrant' do
+    setup do
+      Treasure.destroy_all
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+      Treasure.create :latitude_degrees => '43', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'W'
+    end
+    should 'include locations within' do
+      assert_equal 1, Treasure.within(-42, -153, 0, 0).length
+      assert_equal 2, Treasure.within(-42, -154, 0, 0).length
+      assert_equal 2, Treasure.within(-43, -153, 0, 0).length
+    end
+  end
+
+  context 'straddling equator and prime meridian' do
+    setup do
+      Treasure.destroy_all
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'E'
+      Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '153', :longitude_hemisphere => 'W'
+    end
+    should 'include locations within' do
+      assert_equal 4, Treasure.within(-42, -153, 42, 153).length
+      assert_equal 2, Treasure.within(-41, -153, 42, 153).length
+      assert_equal 2, Treasure.within(-42, -152, 42, 153).length
+      assert_equal 2, Treasure.within(-42, -153, 41, 153).length
+      assert_equal 2, Treasure.within(-42, -153, 42, 152).length
+    end
+  end
+
+
   private
+
+  # TODO: use FactoryGirl instead.
 
   def location(params = {})
     { :latitude_degrees          => 42,
@@ -45,7 +123,7 @@ class GeoToolsTest < Test::Unit::TestCase
       :latitude_decimal_minutes  => 35,
       :latitude_hemisphere       => 'N',
       :longitude_degrees         => 153,
-      :longitude_minutes         => 42,
+      :longitude_minutes         => 22,
       :longitude_decimal_minutes => 27,
       :longitude_hemisphere      => 'E' }.merge params
   end

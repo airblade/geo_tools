@@ -7,7 +7,8 @@ task :default => :test
 
 desc 'Test the geo_tools plugin.'
 Rake::TestTask.new(:test) do |t|
-  t.libs << 'lib' << 'test'
+  t.libs << 'lib'
+  t.libs << 'test'
   t.pattern = 'test/**/*_test.rb'
   t.verbose = true
 end

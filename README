@@ -92,12 +92,12 @@ Here's an example script/console session:
 
 To Do
 =====
+* Get tests to run transactionally so we don't have to clean out database in every single #setup method.
 * Add a validation for the overall latitude and longitude values (to catch for example 90°00.01′N).
 * Use +method+ in the form helpers so user can give database columns different names (e.g. my_lat_degrees, etc).
   See the way Paperclip allows different attachment names.
 * DRY up form helper methods.
 * DRY up location.rb.
-* Tests/specs :-)
 * Investigate implementing with ActiveRecord's multiparameter assignment.
 
 

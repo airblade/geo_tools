@@ -47,9 +47,9 @@ class GeoToolsTest < ActiveSupport::TestCase
         Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'E'
       end
       should 'return locations to nearest degree' do
-        assert_equal 1, Treasure.within(0, 0, 42, 153).length
-        assert_equal 2, Treasure.within(0, 0, 43, 153).length
-        assert_equal 2, Treasure.within(0, 0, 42, 154).length
+        assert_equal 1, Treasure.within(1, 1, 42, 153).length
+        assert_equal 2, Treasure.within(1, 1, 43, 153).length
+        assert_equal 2, Treasure.within(1, 1, 42, 154).length
       end
       teardown { Treasure.destroy_all }
     end
@@ -61,9 +61,9 @@ class GeoToolsTest < ActiveSupport::TestCase
         Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'N', :longitude_degrees => '154', :longitude_hemisphere => 'W'
       end
       should 'return locations to nearest degree' do
-        assert_equal 1, Treasure.within(0, -153, 42, 0).length
-        assert_equal 2, Treasure.within(0, -154, 42, 0).length
-        assert_equal 2, Treasure.within(0, -153, 43, 0).length
+        assert_equal 1, Treasure.within(1, -153, 42, -1).length
+        assert_equal 2, Treasure.within(1, -154, 42, -1).length
+        assert_equal 2, Treasure.within(1, -153, 43, -1).length
       end
       teardown { Treasure.destroy_all }
     end
@@ -75,9 +75,9 @@ class GeoToolsTest < ActiveSupport::TestCase
         Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'E'
       end
       should 'return locations to nearest degree' do
-        assert_equal 1, Treasure.within(-42, 0, 0, 153).length
-        assert_equal 2, Treasure.within(-43, 0, 0, 153).length
-        assert_equal 2, Treasure.within(-42, 0, 0, 154).length
+        assert_equal 1, Treasure.within(-42, 1, -1, 153).length
+        assert_equal 2, Treasure.within(-43, 1, -1, 153).length
+        assert_equal 2, Treasure.within(-42, 1, -1, 154).length
       end
       teardown { Treasure.destroy_all }
     end
@@ -89,9 +89,9 @@ class GeoToolsTest < ActiveSupport::TestCase
         Treasure.create :latitude_degrees => '42', :latitude_hemisphere => 'S', :longitude_degrees => '154', :longitude_hemisphere => 'W'
       end
       should 'return locations to nearest degree' do
-        assert_equal 1, Treasure.within(-42, -153, 0, 0).length
-        assert_equal 2, Treasure.within(-42, -154, 0, 0).length
-        assert_equal 2, Treasure.within(-43, -153, 0, 0).length
+        assert_equal 1, Treasure.within(-42, -153, -1, -1).length
+        assert_equal 2, Treasure.within(-42, -154, -1, -1).length
+        assert_equal 2, Treasure.within(-43, -153, -1, -1).length
       end
       teardown { Treasure.destroy_all }
     end

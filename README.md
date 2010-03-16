@@ -3,13 +3,12 @@
 
 You have lots of plugin choices if you want to geocode North American addresses, or find all the locations near somewhere.  But few help you with forms and validation.
 
-This plugin does three things:
+This plugin does four things:
 
-* Adds +latitude_field+ and +longitude_field+ form helpers to Rails' default form builder.
+* Adds `latitude_field` and `longitude_field` form helpers to Rails' default form builder.
 * Lets your model acts_as_location, to work seamlessly with the form helpers.
 * Validates the location data entered on the form and in the database.
-
-A model which acts_as_location also get a +within+ named scope that returns all locations within the given bounding box, such as you would have on a Google map.
+* Gives you a `within` named scope to find all lcoations within a given bounding box, such as you would have on a Google map.
 
 
 ## Assumptions
@@ -92,7 +91,7 @@ Here's an example script/console session:
 
 * Get tests to run transactionally so we don't have to clean out database in every single #setup method.
 * Add a validation for the overall latitude and longitude values (to catch for example 90°00.01′N).
-* Use +method+ in the form helpers so user can give database columns different names (e.g. my_lat_degrees, etc).
+* Use `method` in the form helpers so user can give database columns different names (e.g. my_lat_degrees, etc).
   See the way Paperclip allows different attachment names.
 * DRY up form helper methods.
 * DRY up location.rb.

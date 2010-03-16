@@ -163,6 +163,4 @@ end
 ActionView::Helpers::FormBuilder.send :include, AirBlade::GeoTools::FormHelpers
 
 # Integrate with custom AirBudd form builder.
-if defined?(AirBlade::AirBudd::FormBuilder)
-  AirBlade::AirBudd::FormBuilder.send :include, AirBlade::GeoTools::AirBuddFormHelpers
-end
+AirBlade::AirBudd::FormBuilder.send(:include, AirBlade::GeoTools::AirBuddFormHelpers) rescue nil

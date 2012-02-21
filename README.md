@@ -1,5 +1,19 @@
 # GeoTools
 
+## Caveat
+
+This code is quite old.  I wouldn't do things this way now, but it's in production and it works.
+
+
+## Compatibility
+
+Works on Ruby 1.8+ and 1.9+.
+
+Designed for Rails 2.3.
+
+
+## Overview
+
 You have lots of plugin choices if you want to geocode North American addresses, or find all the locations near somewhere.  But few help you with forms and validation.
 
 This plugin does four things:
@@ -8,13 +22,6 @@ This plugin does four things:
 * Lets your model acts_as_location, to work seamlessly with the form helpers.
 * Validates the location data entered on the form and in the database.
 * Gives you a `within` named scope to find all lcoations within a given bounding box, such as you would have on a Google map.
-
-
-## Compatibility
-
-Works on Ruby 1.8+ and 1.9+.
-
-Designed for Rails 2.3.
 
 
 ## Assumptions

@@ -1,6 +1,5 @@
 # GeoTools
 
-
 You have lots of plugin choices if you want to geocode North American addresses, or find all the locations near somewhere.  But few help you with forms and validation.
 
 This plugin does four things:
@@ -9,6 +8,13 @@ This plugin does four things:
 * Lets your model acts_as_location, to work seamlessly with the form helpers.
 * Validates the location data entered on the form and in the database.
 * Gives you a `within` named scope to find all lcoations within a given bounding box, such as you would have on a Google map.
+
+
+## Compatibility
+
+Works on Ruby 1.8+ and 1.9+.
+
+Designed for Rails 2.3.
 
 
 ## Assumptions
@@ -87,21 +93,14 @@ Here's an example script/console session:
     -12.576
 
 
-## To Do
+## Someday / Maybe
 
-* Get tests to run transactionally so we don't have to clean out database in every single #setup method.
 * Refactor the multiple string columns into a single string column (per lat. and per lng.), and use virtual attributes to map the single db field back and forth to multiple form fields.  Add a float to 'cache' the lat/lng values.  This will simplify the code significantly.
 * Add a validation for the overall latitude and longitude values (to catch for example 90°00.01′N).
 * Use `method` in the form helpers so user can give database columns different names (e.g. my_lat_degrees, etc).
   See the way Paperclip allows different attachment names.
 * DRY up form helper methods.
 * DRY up location.rb.
-* Investigate implementing with ActiveRecord's multiparameter assignment.
-
-
-## Feedback
-
-Yes please!  --> boss@airbladesoftware.com
 
 
 ## Intellectual Property

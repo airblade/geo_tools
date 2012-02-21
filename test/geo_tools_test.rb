@@ -1,4 +1,6 @@
+# encoding: utf-8
 require 'test_helper'
+require 'geo_tools'
 
 class Treasure < ActiveRecord::Base
   acts_as_location
@@ -6,8 +8,18 @@ end
 
 class GeoToolsTest < ActiveSupport::TestCase
 
-  context 'A location model' do
+  context 'A new location' do
     setup { @treasure = Treasure.new }
+
+    should 'display a sensible #to_s' do
+      assert_equal "00°00.00′, 00°00.00′", @treasure.to_s
+    end
+  end
+
+
+  context 'A location model' do
+    setup    { @treasure = Treasure.new }
+    teardown { Treasure.destroy_all }
 
     should 'convert northern hemisphere latitude fields to a positive float' do
       @treasure.update_attributes location
@@ -33,19 +45,17 @@ class GeoToolsTest < ActiveSupport::TestCase
       @treasure.update_attributes location
       assert_equal "42°57.35′N, 153°22.27′E", @treasure.to_s
     end
-
-    teardown { Treasure.destroy_all }
   end
 
   context 'Location#within' do
-    # TODO: use Factory Girl.
-
     context 'NE quadrant' do
       setup do
         @a = Treasure.create :latitude_degrees => 42, :latitude_hemisphere => 'N', :longitude_degrees => 153, :longitude_hemisphere => 'E', :latitude_minutes => 12, :longitude_minutes => 47
         @b = Treasure.create :latitude_degrees => 43, :latitude_hemisphere => 'N', :longitude_degrees => 153, :longitude_hemisphere => 'E'
         @c = Treasure.create :latitude_degrees => 42, :latitude_hemisphere => 'N', :longitude_degrees => 154, :longitude_hemisphere => 'E'
       end
+      teardown { Treasure.destroy_all }
+
       should 'return locations to nearest minute' do
         assert_same_elements [],           Treasure.within(1, 1, 42, 153)
         assert_same_elements [@a, @b, @c], Treasure.within(1, 1, 43, 154)
@@ -54,7 +64,6 @@ class GeoToolsTest < ActiveSupport::TestCase
         assert_same_elements [@b],         Treasure.within(1, 1, 43, f(153, 46))
         assert_same_elements [@a, @b],     Treasure.within(1, 1, 43, f(153, 47))
       end
-      teardown { Treasure.destroy_all }
     end
 
     context 'NW quadrant' do
@@ -63,6 +72,8 @@ class GeoToolsTest < ActiveSupport::TestCase
         @b = Treasure.create :latitude_degrees => 43, :latitude_hemisphere => 'N', :longitude_degrees => 153, :longitude_hemisphere => 'W'
         @c = Treasure.create :latitude_degrees => 42, :latitude_hemisphere => 'N', :longitude_degrees => 154, :longitude_hemisphere => 'W'
       end
+      teardown { Treasure.destroy_all }
+
       should 'return locations to nearest minute' do
         assert_same_elements [],           Treasure.within(1, -153, 42, -1)
         assert_same_elements [@a, @b, @c], Treasure.within(1, -154, 43, -1)
@@ -71,7 +82,6 @@ class GeoToolsTest < ActiveSupport::TestCase
         assert_same_elements [@b],         Treasure.within(1, f(-153, 46), 43, -1)
         assert_same_elements [@a, @b],     Treasure.within(1, f(-153, 47), 43, -1)
       end
-      teardown { Treasure.destroy_all }
     end
 
     context 'SE quadrant' do
@@ -80,6 +90,8 @@ class GeoToolsTest < ActiveSupport::TestCase
         @b = Treasure.create :latitude_degrees => 43, :latitude_hemisphere => 'S', :longitude_degrees => 153, :longitude_hemisphere => 'E'
         @c = Treasure.create :latitude_degrees => 42, :latitude_hemisphere => 'S', :longitude_degrees => 154, :longitude_hemisphere => 'E'
       end
+      teardown { Treasure.destroy_all }
+
       should 'return locations to nearest minute' do
         assert_same_elements [],           Treasure.within(-42, 1, -1, 153)
         assert_same_elements [@a, @b, @c], Treasure.within(-43, 1, -1, 154)
@@ -88,7 +100,6 @@ class GeoToolsTest < ActiveSupport::TestCase
         assert_same_elements [@b],         Treasure.within(-43, 1, -1, f(153, 46))
         assert_same_elements [@a, @b],     Treasure.within(-43, 1, -1, f(153, 47))
       end
-      teardown { Treasure.destroy_all }
     end
 
     context 'SW quadrant' do
@@ -97,6 +108,8 @@ class GeoToolsTest < ActiveSupport::TestCase
         @b = Treasure.create :latitude_degrees => 43, :latitude_hemisphere => 'S', :longitude_degrees => 153, :longitude_hemisphere => 'W'
         @c = Treasure.create :latitude_degrees => 42, :latitude_hemisphere => 'S', :longitude_degrees => 154, :longitude_hemisphere => 'W'
       end
+      teardown { Treasure.destroy_all }
+
       should 'return locations to nearest minute' do
         assert_same_elements [],           Treasure.within(-42, -153, -1, -1)
         assert_same_elements [@a, @b, @c], Treasure.within(-43, -154, -1, -1)
@@ -105,7 +118,6 @@ class GeoToolsTest < ActiveSupport::TestCase
         assert_same_elements [@b],         Treasure.within(-43, f(-153, 46), -1, -1)
         assert_same_elements [@a, @b],     Treasure.within(-43, f(-153, 47), -1, -1)
       end
-      teardown { Treasure.destroy_all }
     end
 
     context 'straddling equator and prime meridian' do
@@ -115,6 +127,8 @@ class GeoToolsTest < ActiveSupport::TestCase
         @c = Treasure.create :latitude_degrees => 42, :latitude_hemisphere => 'S', :longitude_degrees => 153, :longitude_hemisphere => 'E', :latitude_minutes => 12, :longitude_minutes => 47
         @d = Treasure.create :latitude_degrees => 42, :latitude_hemisphere => 'S', :longitude_degrees => 153, :longitude_hemisphere => 'W', :latitude_minutes => 12, :longitude_minutes => 47
       end
+      teardown { Treasure.destroy_all }
+
       should 'return locations to nearest degree' do
         assert_same_elements [],               Treasure.within(-42, -153, 42, 153)
         assert_same_elements [@a, @b, @c, @d], Treasure.within(-43, -154, 43, 154)
@@ -131,14 +145,10 @@ class GeoToolsTest < ActiveSupport::TestCase
         assert_same_elements [@b, @d],         Treasure.within(-43, -154, 43, f(153, 46))
         assert_same_elements [@a, @b, @c, @d], Treasure.within(-43, -154, 43, f(153, 47))
       end
-      teardown { Treasure.destroy_all }
     end
   end
 
-
   private
-
-  # TODO: use FactoryGirl instead.
 
   def location(params = {})
     { :latitude_degrees          => 42,

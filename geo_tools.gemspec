@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.authors     = ['Andy Stewart']
   s.email       = ['boss@airbladesoftware.com']
   s.homepage    = 'https://github.com/airblade/geo_tools'
-  s.summary     = 'Makes using latitudes and longitudes on forms easier.'
+  s.summary     = 'Easierusing latitudes and longitudes on forms (and validation in model) for Rals 2.3.'
   s.description = s.summary
 
   s.rubyforge_project = 'geo_tools'
